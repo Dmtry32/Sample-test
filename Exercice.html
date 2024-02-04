@@ -1,0 +1,92 @@
+<!-- 
+Online HTML, CSS and JavaScript editor to run code online.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Exercice</title>
+    <script src="color-thief.min.js"></script>
+</head>
+
+<body>
+    <div>
+        <input type="file" accept="image/*" name="image" id="file" onchange="loadFile(event)" style="display: none;">
+        <label for="file" style="cursor: pointer;">Upload Image</label>
+        <img id="output" width="200" />
+    </div>
+
+    <script>
+        var loadFile = function(event) {
+            var image = document.getElementById('output');
+            image.src = URL.createObjectURL(event.target.files[0]);
+
+            // Appel à la fonction de vérification et conversion du badge ici
+            checkAndConvertBadge(image);
+        };
+
+        var checkAndConvertBadge = function(image) {
+            // Vérifier la taille de l'image (512x512)
+            if (image.width == 512 && image.height == 512) {
+                // Vérifier si les pixels non transparents sont à l'intérieur d'un cercle
+                if (isCircle(image)) {
+                    // Vérifier si les couleurs donnent une impression de "joie"
+                    if (areColorsHappy(image)) {
+                        alert('Badge vérifié avec succès!');
+                    } else {
+                        alert('Les couleurs du badge ne donnent pas une impression de "joie".');
+                    }
+                } else {
+                    alert('Les pixels non transparents ne sont pas à l\'intérieur d\'un cercle.');
+                }
+            } else {
+                alert('La taille du badge ne répond pas aux critères.');
+            }
+        };
+
+        var isCircle = function(image) {
+
+            var canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            var context = canvas.getContext('2d');
+            context.drawImage(image, 0, 0, image.width, image.height);
+            var imageData = context.getImageData(0, 0, image.width, image.height).data;
+            var centerX = image.width / 2;
+            var centerY = image.height / 2;
+            var radius = image.width / 2;
+
+            for (var i = 0; i < imageData.length; i += 4) {
+                var x = (i / 4) % image.width;
+                var y = Math.floor((i / 4) / image.width);
+
+                var distanceToCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                if (imageData[i + 3] !== 0 && distanceToCenter > radius) {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        var areColorsHappy = function(image) {
+            var colorThief = new ColorThief();
+            var dominantColor = colorThief.getColor(image);
+            var isHappyColor = isVibrantColor(dominantColor);
+
+            return isHappyColor;
+        };
+
+        var isVibrantColor = function(color) {
+            var red = color[0];
+            var green = color[1];
+            var blue = color[2];
+
+            return (red > 200 && green < 100 && blue < 100); // Exemple pour une couleur rouge vif
+        };
+    </script>
+</body>
+
+</html>
